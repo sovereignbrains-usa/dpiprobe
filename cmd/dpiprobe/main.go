@@ -41,7 +41,18 @@ func main() {
 	noupdate := flag.Bool("noupdate", false, "не проверять GitHub на новую версию")
 	sendReport := flag.Bool("send", false, "отправить обезличенный отчёт без вопроса")
 	nosend := flag.Bool("nosend", false, "не спрашивать и не отправлять отчёт")
+	tcpinfo := flag.Bool("tcpinfo", false, "отладка: TCP-info раз в 100 мс на instagram, ya.ru и одном адресе 16 КБ, затем выход")
 	flag.Parse()
+
+	if *tcpinfo {
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+		defer stop()
+		if err := probe.RunTCPInfoProbe(ctx, os.Stdout); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		return
+	}
 
 	onlySet := false
 	flag.Visit(func(f *flag.Flag) { onlySet = onlySet || f.Name == "only" })
